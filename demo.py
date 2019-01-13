@@ -40,7 +40,7 @@ if sum([len(x) for x in dataset.values()]) == 0:
     print('No data found!')
     sys.exit()
     
-print('# Class: ' + speech_class + ', Lambda: ' + str(lambd) + ' #')
+#print('# Class: ' + speech_class + ', Lambda: ' + str(lambd) + ' #')
 
 
 class_words = get_class_words(dataset)

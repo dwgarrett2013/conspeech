@@ -31,7 +31,7 @@ classes = ['DY','DN','RY','RN']
 vocab_count = defaultdict(float)
 
 def construct_dataset(paths):
-    print("[constructing dataset...]")
+    #print("[constructing dataset...]")
     dataset = dict()
     
     for c in classes:
@@ -121,7 +121,7 @@ def construct_dataset(paths):
 
                 dataset[label].append(lines)
 
-    print("[dataset constructed.]")
+    #print("[dataset constructed.]")
     return (dataset,vocab)               
 
 
