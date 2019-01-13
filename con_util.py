@@ -3,10 +3,10 @@ import operator
 import os
 import random
 from collections import defaultdict
-from scipy.stats import futil
-from sklearn import preprocessing
+#from scipy.stats import futil
+#from sklearn import preprocessing
 import numpy as np
-from sklearn.feature_extraction import DictVectorizer
+#from sklearn.feature_extraction import DictVectorizer
 import re
 import sys
 from nltk import pos_tag
@@ -31,7 +31,7 @@ classes = ['DY','DN','RY','RN']
 vocab_count = defaultdict(float)
 
 def construct_dataset(paths):
-    print "[constructing dataset...]"
+    print("[constructing dataset...]")
     dataset = dict()
     
     for c in classes:
@@ -93,10 +93,16 @@ def construct_dataset(paths):
                 content = content.replace(chr(0xc3), '')
                 content = content.replace(chr(0x90), '')
 
-                #lines = content.split(" . ")
+                #print(content)
+
+                lines = content.split(" . ")
+                #print(lines)
                 lines = re.split(r' \.  | \!  | \?  ',content)
+                #print(lines)
                 lines = [x.strip() for x in lines]
-                lines = filter(lambda a: (a.strip() != ''), lines)
+                #lines = filter(lambda a: (a.strip() != ''), lines)
+                #print(lines)
+
 
                 if len(lines) <= 1:
                     continue
@@ -115,17 +121,21 @@ def construct_dataset(paths):
 
                 dataset[label].append(lines)
 
-    print "[dataset constructed.]"
+    print("[dataset constructed.]")
     return (dataset,vocab)               
 
 
 def get_class_words(dataset):
-    class_words = dict()    
+    #print(dataset)
+    class_words = dict()
 
     for c in classes:
         class_words[c] = defaultdict(float)
-    
-    for key,speeches in dataset.iteritems():
+
+    #print(class_words)
+    #print(dataset.items())
+
+    for key,speeches in dataset.items():
         for speech in speeches:
             for sentence in speech:
                 for word in sentence.split():
@@ -149,8 +159,8 @@ def jk_pos_tag_filter(dataset):
         jk[c] =defaultdict(float)
 
     speech_cnt = 0
-    for key,speeches in dataset.iteritems():
-        print key
+    for key,speeches in dataset.items():
+        print(key)
         sys.stdout.flush()
         for idx,speech in enumerate(speeches):
             for sentence in speech:
@@ -175,7 +185,7 @@ def jk_pos_tag_filter(dataset):
                             jk[key][tw]+=1
 
             if idx % 100 == 0:
-                print idx,'/',len(speeches),'...'
+                print(idx,'/',len(speeches),'...')
                 sys.stdout.flush()           
 
     
@@ -208,10 +218,10 @@ def get_jk_trend(jk,print_n=10,thresh=1.0,min_occ=20):
 
     for c in classes:
         if print_n > 0:
-            print c 
+            print(c)
             
         remlist = []
-        for word, ratio in jk_trend[c].iteritems():
+        for word, ratio in jk_trend[c].items():
             if (ratio > thresh) and (sum([jk[x][word] for x in classes]) >= min_occ):
                 pass
             else:
@@ -220,7 +230,7 @@ def get_jk_trend(jk,print_n=10,thresh=1.0,min_occ=20):
             del jk_trend[c][r]
         sorted_jk = sorted(jk_trend[c].items(), key=operator.itemgetter(1),reverse=True)
         for sj in sorted_jk[:print_n]:
-            print sj[0]
+            print(sj[0])
         #print len(jk_trend[c])
     return jk_trend
 
@@ -241,7 +251,7 @@ def longest_common_substring(s1, s2):
 def generate_speech_sba(label,dataset,jk_trend,rand_set_size=20,sim_thresh = 0.1,max_sentences=30):    
     from nltk import trigrams
     
-    print label
+    print(label)
     random.seed()
     last_speech = dataset[label][random.randint(0,len(dataset[label])-1)]
     last_idx = 1
@@ -254,7 +264,7 @@ def generate_speech_sba(label,dataset,jk_trend,rand_set_size=20,sim_thresh = 0.1
 
     
 
-    print last_sentence
+    print(last_sentence)
     sys.stdout.flush()
     for i in range(max_sentences):
         D=[]
@@ -362,12 +372,12 @@ def generate_speech_sba(label,dataset,jk_trend,rand_set_size=20,sim_thresh = 0.1
 
         #print last_speech[last_idx-1]
         #print 'Similarity:',max_similarity,'/ Struc:',max_struc_sim,'/ Text:',max_text_sim
-        print last_sentence
+        print(last_sentence)
         sys.stdout.flush()
         if last_sentence == END_OF_SPEECH:
             break
             
-    print speech_cnt
+    print(speech_cnt)
     
     
 def get_n_gram_class_probs(dataset,n=6):
@@ -378,7 +388,7 @@ def get_n_gram_class_probs(dataset,n=6):
         class_tokens[c] = []
 
 
-    for key,speeches in dataset.iteritems():
+    for key,speeches in dataset.items():
         for speech in speeches:
             for sentence in speech:
                 class_tokens[key].extend(sentence.split())
@@ -386,7 +396,7 @@ def get_n_gram_class_probs(dataset,n=6):
     #print len(tokens)
     n_gram_count = dict()
     n_gram_class_probs = dict()
-    for c,tokens in class_tokens.iteritems():
+    for c,tokens in class_tokens.items():
         n_grams = ngrams(tokens,n)
         
         for ng in n_grams:
@@ -399,7 +409,7 @@ def get_n_gram_class_probs(dataset,n=6):
                 
             n_gram_count[ng][c] += 1
             
-    for n_gram,class_counts in n_gram_count.iteritems():
+    for n_gram,class_counts in n_gram_count.items():
         for c in classes:
             n_gram_class_probs[n_gram][c] = class_counts[c]/sum(class_counts.values())
 
@@ -416,14 +426,14 @@ def get_n_gram_probs(dataset,n=6,verbose=True):
         class_tokens[c] = []
 
 
-    for key,speeches in dataset.iteritems():
+    for key,speeches in dataset.items():
         for speech in speeches:
             for sentence in speech:
                 class_tokens[key].extend(sentence.split())
 
     #print len(tokens)
     class_n_gram_probs = dict()
-    for c,tokens in class_tokens.iteritems():
+    for c,tokens in class_tokens.items():
         n_grams = ngrams(tokens,n)
 
 
@@ -434,25 +444,25 @@ def get_n_gram_probs(dataset,n=6,verbose=True):
             n_gram_count[ng] += 1
 
         prob = dict()
-        for key, value in n_gram_count.iteritems():
+        for key, value in n_gram_count.items():
             n_1_gram = tuple(key[:-1])
             word = key[-1]
             if n_1_gram not in prob:
                 prob[n_1_gram] = defaultdict(float)
             prob[n_1_gram][word] += value
 
-        for n_1_gram, words in prob.iteritems():
+        for n_1_gram, words in prob.items():
             n_1_gram_sum = sum(words.values())
-            for word,cnt in words.iteritems():
+            for word,cnt in words.items():
                 prob[n_1_gram][word] = prob[n_1_gram][word]/n_1_gram_sum
 
-        for key, value in prob.iteritems():
+        for key, value in prob.items():
             prob[key] = sorted(value.items(), key=operator.itemgetter(1), reverse=True)
 
         #n_gram_probs = sorted(prob.items(), key=lambda x: len(x[1]), reverse= True)
         class_n_gram_probs[c] = prob
         if verbose == True:
-            print c,len(prob)
+            print(c,len(prob))
     return class_n_gram_probs
 
 
@@ -463,7 +473,7 @@ def get_corpus_n_gram_probs(dataset,n=6):
     
     all_tokens = []
 
-    for key,speeches in dataset.iteritems():
+    for key,speeches in dataset.items():
         for speech in speeches:
             for sentence in speech:
                 all_tokens.extend(sentence.split())
@@ -479,22 +489,22 @@ def get_corpus_n_gram_probs(dataset,n=6):
         n_gram_count[ng] += 1
 
     n_gram_probs = dict()
-    for key, value in n_gram_count.iteritems():
+    for key, value in n_gram_count.items():
         n_1_gram = tuple(key[:-1])
         word = key[-1]
         if n_1_gram not in n_gram_probs:
             n_gram_probs[n_1_gram] = defaultdict(float)
         n_gram_probs[n_1_gram][word] += value
 
-    for n_1_gram, words in n_gram_probs.iteritems():
+    for n_1_gram, words in n_gram_probs.items():
         n_1_gram_sum = sum(words.values())
-        for word,cnt in words.iteritems():
+        for word,cnt in words.items():
             n_gram_probs[n_1_gram][word] = n_gram_probs[n_1_gram][word]/n_1_gram_sum
 
-    for key, value in n_gram_probs.iteritems():
+    for key, value in n_gram_probs.items():
         n_gram_probs[key] = sorted(value.items(), key=operator.itemgetter(1), reverse=True)
 
-    print len(n_gram_probs)
+    print(len(n_gram_probs))
     return n_gram_probs
 
 def get_start_key(dataset,label,n=5):
@@ -532,7 +542,7 @@ def get_word_prob_for_topics(dataset, c, word, topics):
     for speech in dataset[c]:
         full_speech = " ".join(speech)
         speech_prob = 0
-        for t,prob in topics.iteritems():            
+        for t,prob in topics.items():            
             if t in full_speech:
                 speech_prob += prob
         
@@ -553,7 +563,7 @@ def get_n_topics_from_ngram(dataset, jk_trend,jk, c, ngram, n=3):
             for key in jk_trend[c].keys():
                 topics[key] += full_speech.count(key)
 
-    for key,cnt in  topics.iteritems():
+    for key,cnt in  topics.items():
         topics[key] = cnt/jk[c][key]
     result = []
     for t in sorted(topics.items(), key=operator.itemgetter(1),reverse=True)[:n]:
@@ -567,7 +577,7 @@ def get_topics_from_speech(speech, jk_trend,jk, c, n=3):
         if key in speech:
             topics[key] += speech.count(key)            
 
-    for key,cnt in  topics.iteritems():
+    for key,cnt in  topics.items():
         topics[key] = cnt/jk[c][key]
         
     if n is None:
@@ -582,8 +592,8 @@ def get_topics_from_speech(speech, jk_trend,jk, c, n=3):
 import pickle
 def create_corpus_pos_tags(dataset):
     all_pos_tags = set()
-    for label,speeches in dataset.iteritems():
-        print label,'...',
+    for label,speeches in dataset.items():
+        print(label,'...',)
         sys.stdout.flush()
         for sp in speeches:            
             for sent in sp[1:-1]:
@@ -591,7 +601,7 @@ def create_corpus_pos_tags(dataset):
                 tag_sequence = [x[1] for x in tags]
                 tag_sequence = " ".join(tag_sequence)                
                 all_pos_tags.add(tag_sequence)
-        print 'Done!'
+        print('Done!')
         sys.stdout.flush()
     pickle.dump( all_pos_tags, open( "all_pos_tags.p", "wb" ) )
     return all_pos_tags
@@ -616,7 +626,7 @@ def evaluate_grammar(speech,verbose=True):
         if tag_sequence in all_pos_tags:
             acc_cnt += 1
         elif verbose == True:
-            print sent
+            print(sent)
         
     
     return acc_cnt/len(sentences)
@@ -649,9 +659,9 @@ def evaluate_content(gen_speech, dataset, label,jk,jk_trend):
 def generate_speech_wba(dataset,n_gram_probs,ngram_class_probs,corpus_ngram_props,jk_trend,jk,label,lamb=0.3,max_words=900):
     wordcnt = 0
     next_word = ''
-    nn = len(n_gram_probs[label].keys()[0])
+    nn = len(list(n_gram_probs[label].keys())[0])
     tuple_key = get_start_key(dataset,label,n=nn)
-    print " ".join(tuple_key),
+    print(" ".join(tuple_key),)
     my_speech = " ".join(tuple_key)
     current_sentence = my_speech
     topic_cnt = defaultdict(float)
@@ -675,7 +685,7 @@ def generate_speech_wba(dataset,n_gram_probs,ngram_class_probs,corpus_ngram_prop
             
         sum_probs = sum(topic_probs.values())
         if sum_probs > 0:
-            for word,prob in topic_probs.iteritems():
+            for word,prob in topic_probs.items():
                 topic_probs[word] = topic_probs[word]/sum_probs
         
 
@@ -706,12 +716,12 @@ def generate_speech_wba(dataset,n_gram_probs,ngram_class_probs,corpus_ngram_prop
             next_word = END_OF_SENTENCE
 
         if next_word == END_OF_SENTENCE:
-            print '.'
+            print('.')
             speech_sentences.append(current_sentence)
             current_sentence = ''
             sen_count += 1
         else:
-            print next_word,
+            print(next_word),
             current_sentence = current_sentence + ' ' + next_word
         my_speech = my_speech + ' ' + next_word
         tuple_key = tuple_key[1:] + (next_word,)
